@@ -1,7 +1,9 @@
 package com.littlebit.jetreader.di
 
+import com.google.firebase.firestore.FirebaseFirestore
 import com.littlebit.jetreader.network.BooksApi
 import com.littlebit.jetreader.repository.BookRepository
+import com.littlebit.jetreader.repository.FireRepository
 import com.littlebit.jetreader.utils.Constants
 import dagger.Module
 import dagger.Provides
@@ -29,5 +31,10 @@ object AppModule {
             .build()
             .create(BooksApi::class.java)
     }
+
+    @Singleton
+    @Provides
+    fun provideFireBookRepository() = FireRepository(queryBook = FirebaseFirestore.getInstance()
+        .collection("books"))
 
 }

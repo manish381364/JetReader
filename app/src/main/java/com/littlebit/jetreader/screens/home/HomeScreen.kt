@@ -14,7 +14,8 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,6 +30,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
@@ -36,11 +38,15 @@ import coil.request.ImageRequest
 import com.google.firebase.auth.FirebaseAuth
 import com.littlebit.jetreader.model.JetBook
 import com.littlebit.jetreader.navigation.JetScreens
+import com.littlebit.jetreader.screens.search.BooksSearchViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(navController: NavHostController = NavHostController(LocalContext.current)) {
+fun HomeScreen(
+    navController: NavController = NavHostController(LocalContext.current),
+    viewModel: HomeScreenViewModel = hiltViewModel(),
+) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -49,13 +55,21 @@ fun HomeScreen(navController: NavHostController = NavHostController(LocalContext
         floatingActionButton = {
             FabContent(onClick = { navController.navigate(JetScreens.SearchScreen.name) })
         },
-    ) {
+    ) { it ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(it),
         ) {
-            HomeContent(books = listOf(), navController = navController)
+            var books = emptyList<JetBook>()
+            val currentUser = FirebaseAuth.getInstance().currentUser
+            if(!viewModel.data.value.data.isNullOrEmpty()){
+                books = viewModel.data.value.data!!.toList().filter { jetBook ->
+                    jetBook.userId == currentUser?.uid.toString()
+                }
+                Log.d("FIRESTORE", "HomeScreen: ${books.toString()}")
+            }
+            HomeContent(books = books, navController = navController)
         }
     }
 }
@@ -99,18 +113,19 @@ fun JetReaderAppBar(
             IconButton(onClick = { leadingIconOnClick() }) {
                 Icon(
                     modifier = Modifier.clip(RoundedCornerShape(12.dp)),
-                    imageVector = if (!showProfile) leadingIcon?:Icons.Default.Person else  Icons.Default.Person,
+                    imageVector = if (!showProfile) leadingIcon
+                        ?: Icons.Default.Person else Icons.Default.Person,
                     contentDescription = "leading icon"
                 )
             }
         },
         actions = {
-            if(showProfile){
+            if (showProfile) {
                 IconButton(onClick = {
                     trailingIconOnClick()
                 }) {
                     Icon(
-                        imageVector = trailingIcon?: Icons.Default.Logout,
+                        imageVector = trailingIcon ?: Icons.Default.Logout,
                         contentDescription = "trailing icon"
                     )
                 }
@@ -161,12 +176,12 @@ fun HomeContent(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             TitleSections(modifier = Modifier, label = "Reading Now")
-//            Spacer(modifier = Modifier.fillMaxWidth(0.7f))
+            Spacer(modifier = Modifier.fillMaxWidth(0.7f))
             Column(
                 modifier = Modifier.width(70.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
-            ){
+            ) {
                 Icon(
                     imageVector = Icons.Filled.AccountCircle,
                     contentDescription = "Profile",
@@ -193,40 +208,45 @@ fun HomeContent(
                 id = "1",
                 title = "The Lord of the Rings",
                 author = "J.R.R. Tolkien",
-                image = "https://picsum.photos/200/300",
                 description = "The Lord of the Rings is an epic high fantasy novel written by English author and scholar J. R. R. Tolkien. The story began as a sequel to Tolkien's 1937 fantasy novel The Hobbit, but eventually developed into a much larger work. Written in stages between 1937 and 1949, The Lord of the Rings is one of the best-selling novels ever written, with over 150 million copies sold.",
+                image = "https://picsum.photos/200/300",
+                isRead = false,
             ),
             JetBook(
                 id = "2",
                 title = "The Hobbit",
                 author = "J.R.R. Tolkien",
-                image = "https://picsum.photos/200/300",
                 description = "The Hobbit is a children's fantasy novel by English author J. R. R. Tolkien. It was published on 21 September 1937 to wide critical acclaim, being nominated for the Carnegie Medal and awarded a prize from the New York Herald Tribune for best juvenile fiction. The book remains popular and is recognized as a classic in children's literature.",
+                image = "https://picsum.photos/200/300",
+                isRead = false,
             ),
             JetBook(
                 id = "3",
                 title = "The Fellowship of the Ring",
                 author = "J.R.R. Tolkien",
-                image = "https://picsum.photos/200/300",
                 description = "The Fellowship of the Ring is the first volume of J. R. R. Tolkien's epic adventure The Lord of the Rings. It was published on 29 July 1954 in the United Kingdom by George Allen & Unwin, and in the United States by Houghton Mifflin on 21 August 1954. The book is 423 pages long and contains 11 chapters. It is followed by The Two Towers and The Return of the King.",
+                image = "https://picsum.photos/200/300",
+                isRead = false,
             ),
             JetBook(
                 id = "4",
                 title = "The Two Towers",
                 author = "J.R.R. Tolkien",
                 image = "https://picsum.photos/200/300",
+                isRead = false,
             ),
             JetBook(
                 id = "5",
                 title = "The Return of the King",
                 author = "J.R.R. Tolkien",
                 image = "https://picsum.photos/200/300",
+                isRead = false,
             ),
         )
-        ListCard(){
-            navController.navigate(JetScreens.BookDetailsScreen.name + "/${it}")
+        ListCard(book = if(books.isNotEmpty()) books[0] else testBooks[0]) {
+            navController.navigate(JetScreens.UpdateScreen.name + "/$it")
         }
-        ReadingCurrentBooks(testBooks, navController)
+        ReadingCurrentBooks(books, navController)
     }
 }
 
@@ -263,8 +283,13 @@ fun HorizontalScrollableComponent(
 
 @Composable
 fun ListCard(
-    book: JetBook = JetBook(title = "My Book", author = "Authors", image = "https://picsum.photos/200/300"),
-    onClickDetails: (String) -> Unit = {}
+    book: JetBook = JetBook(
+        title = "My Book",
+        author = "Authors",
+        image = "https://picsum.photos/200/300",
+        isRead = false
+    ),
+    onClickDetails: (bookId: String) -> Unit = {}
 ) {
     val context = LocalContext.current
     val resources = context.resources
@@ -279,7 +304,7 @@ fun ListCard(
             .clip(RoundedCornerShape(22.dp))
             .clickable { onClickDetails(book.id.toString()) },
         elevation = CardDefaults.cardElevation(6.dp),
-        ) {
+    ) {
         Column(
             modifier = Modifier.width(
                 screenWidth.dp - (spacing * 2)
@@ -305,7 +330,7 @@ fun ListCard(
                     modifier = Modifier.padding(top = 25.dp),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
-                ){
+                ) {
                     Icon(
                         imageVector = Icons.Rounded.FavoriteBorder,
                         contentDescription = "Favorite",
@@ -343,7 +368,7 @@ fun ListCard(
                 .align(Alignment.End),
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.Bottom
-        ){
+        ) {
             RoundedButton(label = "Reading", radius = 22, onClick = {})
         }
     }
@@ -357,9 +382,11 @@ fun RoundedButton(
         .height(70.dp),
     label: String = "Reading",
     radius: Int = 29,
+    isClickable: Boolean = false,
     onClick: () -> Unit = {}
-){
+) {
     Surface(
+        modifier = if (isClickable) Modifier.clickable { onClick() } else Modifier,
         shadowElevation = 4.dp,
         shape = RoundedCornerShape(bottomEnd = radius.dp, topStart = radius.dp),
         color = MaterialTheme.colorScheme.secondary
@@ -386,7 +413,7 @@ fun RoundedButton(
 @Composable
 fun BookRating(
     score: Float = 4.5f
-){
+) {
     Surface(
         modifier = Modifier
             .padding(5.dp)

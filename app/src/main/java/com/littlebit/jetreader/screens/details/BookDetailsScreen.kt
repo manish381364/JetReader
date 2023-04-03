@@ -1,44 +1,36 @@
 package com.littlebit.jetreader.screens.details
 
+import android.util.Log
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
-import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.ArrowDownward
-import androidx.compose.material.icons.rounded.Error
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.FilterQuality
-import androidx.compose.ui.graphics.drawscope.DrawContext
-import androidx.compose.ui.graphics.drawscope.DrawStyle
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.toSize
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
-import coil.compose.AsyncImagePainter
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.littlebit.jetreader.model.JetBook
 import com.littlebit.jetreader.screens.home.JetReaderAppBar
 import org.jsoup.Jsoup
 
@@ -63,9 +55,10 @@ fun BookDetailsScreen(
         },
 
         ) {
-        Box(modifier = Modifier
-            .padding(it)
-            .fillMaxSize()
+        Box(
+            modifier = Modifier
+                .padding(it)
+                .fillMaxSize()
         ) {
             Column(
                 modifier = Modifier
@@ -74,7 +67,7 @@ fun BookDetailsScreen(
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Box{
+                Box {
                     var isLoading by remember {
                         mutableStateOf(true)
                     }
@@ -151,17 +144,16 @@ fun BookDetailsScreen(
                 )
                 Spacer(modifier = Modifier.height(30.dp))
                 var expanded by remember { mutableStateOf(false) }
-                val targetSize = if (expanded) 400.dp else 100.dp
-                val animatedSize by animateDpAsState(
-                    targetValue = targetSize,
-                    animationSpec = tween(durationMillis = 200)
-                )
-                Card(
+                var size by remember { mutableStateOf(Size.Zero) }
+                ElevatedCard(
                     modifier = Modifier
-                        .padding(start = 2.dp, end = 2.dp, bottom = 100.dp)
-                        .height(animatedSize)
+                        .padding(start = 5.dp, end = 5.dp, bottom = 2.dp)
                         .clickable { expanded = !expanded }
-                        .clip(RoundedCornerShape(10.dp)),
+                        .clip(RoundedCornerShape(10.dp))
+                        .onSizeChanged {
+                            size = it.toSize()
+                        }
+                        .animateContentSize { initialValue, targetValue -> size },
                     elevation = CardDefaults.cardElevation(4.dp),
                 ) {
 
@@ -181,9 +173,8 @@ fun BookDetailsScreen(
                         maxLines = if (expanded) (Int.MAX_VALUE) else 3,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier
-                            .padding(5.dp)
+                            .padding(top = 5.dp, bottom = 2.dp, start = 5.dp, end = 5.dp)
                             .fillMaxWidth()
-
                     )
                     IconButton(modifier = Modifier
                         .align(Alignment.End),
@@ -204,13 +195,61 @@ fun BookDetailsScreen(
                     .padding(15.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                FloatingActionButton(onClick = { /*TODO*/ }) {
+                FloatingActionButton(onClick = {
+                    val book = JetBook(
+                        title = viewModel.bookResource.value.data?.volumeInfo?.title ?: "",
+                        author = viewModel.bookResource.value.data?.volumeInfo?.authors.toString()
+                            .removeSuffix("]").removePrefix("["),
+                        pageCount = viewModel.bookResource.value.data?.volumeInfo?.pageCount.toString()
+                            ?: "0",
+                        categories = viewModel.bookResource.value.data?.volumeInfo?.categories.toString()
+                            .removePrefix("[").removeSuffix("]").replace('/', '|'),
+                        publishedDate = viewModel.bookResource.value.data?.volumeInfo?.publishedDate
+                            ?: "",
+                        description = viewModel.bookResource.value.data?.volumeInfo?.description
+                            ?: "",
+                        image = viewModel.bookResource.value.data?.volumeInfo?.imageLinks?.thumbnail
+                            ?: "",
+                        id = viewModel.bookResource.value.data?.id ?: "",
+                        notes = "",
+                        isFavorite = false,
+                        isRead = false,
+                        userId = FirebaseAuth.getInstance().currentUser?.uid.toString(),
+                        rating = "0",
+                    )
+                    saveToDataBase(book, navController)
+                }) {
                     Text("Save")
                 }
                 FloatingActionButton(onClick = { /*TODO*/ }) {
                     Text("Cancel")
                 }
             }
+        }
+    }
+}
+
+
+fun saveToDataBase(
+    book: JetBook,
+    navController: NavController
+) {
+
+    val db = FirebaseFirestore.getInstance()
+    val dbCollection = db.collection("books")
+    if (book.id != "") {
+        dbCollection.add(book).addOnSuccessListener {
+            val docId = it.id
+            db.document("books/$docId").update(hashMapOf("id" to docId) as Map<String, Any>)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        Log.d("FIRESTORE ADD", "DocumentSnapshot successfully updated!")
+                        navController.popBackStack()
+                    } else {
+                        Log.d("FIRESTORE ADD", "Error updating document", task.exception)
+
+                    }
+                }
         }
     }
 }

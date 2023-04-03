@@ -25,6 +25,5 @@ class FireRepository @Inject constructor(
             dataOrException.exception = exception
         }
         return dataOrException
-
     }
 }

@@ -1,8 +1,10 @@
 package com.littlebit.jetreader.navigation
 
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
+import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -13,6 +15,7 @@ import com.littlebit.jetreader.screens.createAccountScreen.CreateAccountScreen
 import com.littlebit.jetreader.screens.details.BookDetailsScreen
 import com.littlebit.jetreader.screens.details.BookDetailsViewModel
 import com.littlebit.jetreader.screens.home.HomeScreen
+import com.littlebit.jetreader.screens.home.HomeScreenViewModel
 import com.littlebit.jetreader.screens.login.LoginSignUpScreen
 import com.littlebit.jetreader.screens.search.BooksSearchViewModel
 import com.littlebit.jetreader.screens.search.SearchScreen
@@ -21,6 +24,7 @@ import com.littlebit.jetreader.screens.update.UpdateScreen
 import dagger.hilt.android.lifecycle.HiltViewModel
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun JetReaderNavigation() {
     val navController = rememberNavController()
@@ -29,7 +33,8 @@ fun JetReaderNavigation() {
             JetReaderSplashScreen(navController)
         }
         composable(JetScreens.HomeScreen.name) {
-            HomeScreen(navController)
+            val viewModel: HomeScreenViewModel = hiltViewModel()
+            HomeScreen(navController, viewModel = viewModel)
         }
         composable(JetScreens.SearchScreen.name) {
             val viewModel: BooksSearchViewModel = hiltViewModel()
@@ -57,8 +62,16 @@ fun JetReaderNavigation() {
         composable(JetScreens.StatsScreen.name) {
             StatsScreen(navController)
         }
-        composable(JetScreens.UpdateScreen.name) {
-            UpdateScreen(navController)
+        composable(JetScreens.UpdateScreen.name+"/{bookId}",
+            arguments = listOf(
+                navArgument("bookId") {
+                    type = NavType.StringType
+                }
+            )
+        ) {
+            val viewModel: BookDetailsViewModel = hiltViewModel()
+            val bookId = it.arguments?.getString("bookId")
+            UpdateScreen(navController, bookId, viewModel)
         }
 
     }

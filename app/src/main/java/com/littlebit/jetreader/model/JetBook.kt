@@ -1,6 +1,9 @@
 package com.littlebit.jetreader.model
 
+import com.google.firebase.firestore.Exclude
+
 data class JetBook(
+    @Exclude
     var id: String? = null,
     var title: String? = null,
     var author: String? = null,
@@ -18,8 +21,10 @@ data class JetBook(
     var price: String? = null,
     var currency: String? = null,
     var buyLink: String? = null,
-    var isFavourite: Boolean = false,
+    var isFavorite: Boolean = false,
     var notes: String? = null,
+    val isRead: Boolean? = null,
+    val userId: String? = null,
 ) {
 
 }

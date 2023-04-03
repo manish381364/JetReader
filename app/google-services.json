@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "971769796506",
+    "project_id": "jetreader-cc61c",
+    "storage_bucket": "jetreader-cc61c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:971769796506:android:fd1cd0c2e7f365cb740c23",
+        "android_client_info": {
+          "package_name": "com.littlebit.jetreader"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "971769796506-uj5nc70n9ku3pjsemkado3an5m828aor.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.littlebit.jetreader",
+            "certificate_hash": "19ab1fffb0ad678f0793e8aaeddaa4e28c68fc40"
+          }
+        },
+        {
+          "client_id": "971769796506-voce6rdtc527biqvukvb1et4gb8ntp9h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDMUtR_gQwfRce3cA4p8YH26r_RQeVXUYI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "971769796506-voce6rdtc527biqvukvb1et4gb8ntp9h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

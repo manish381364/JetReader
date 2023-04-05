@@ -12,12 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.littlebit.jetreader.components.Fields
-import com.littlebit.jetreader.components.SignUpOrLogin
-import com.littlebit.jetreader.components.SocialMediaButtons
-import com.littlebit.jetreader.components.TextBetweenDivider
+import com.littlebit.jetreader.components.*
 import com.littlebit.jetreader.navigation.JetScreens
-import com.littlebit.jetreader.screens.JetReaderLogo
 import com.littlebit.jetreader.utils.isValidEmail
 import com.littlebit.jetreader.utils.isValidPassWord
 

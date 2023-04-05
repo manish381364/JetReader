@@ -3,15 +3,12 @@ package com.littlebit.jetreader.navigation
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.ViewModel
-import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.littlebit.jetreader.screens.JetReaderSplashScreen
-import com.littlebit.jetreader.screens.createAccountScreen.CreateAccountScreen
 import com.littlebit.jetreader.screens.details.BookDetailsScreen
 import com.littlebit.jetreader.screens.details.BookDetailsViewModel
 import com.littlebit.jetreader.screens.home.HomeScreen
@@ -21,7 +18,6 @@ import com.littlebit.jetreader.screens.search.BooksSearchViewModel
 import com.littlebit.jetreader.screens.search.SearchScreen
 import com.littlebit.jetreader.screens.stats.StatsScreen
 import com.littlebit.jetreader.screens.update.UpdateScreen
-import dagger.hilt.android.lifecycle.HiltViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,9 +39,6 @@ fun JetReaderNavigation() {
         composable(JetScreens.LoginSignUpScreen.name) {
             LoginSignUpScreen(navController)
         }
-        composable(JetScreens.CreateAccountScreen.name) {
-            CreateAccountScreen(navController)
-        }
         composable(
             JetScreens.BookDetailsScreen.name
                     + "/{bookId}",
@@ -59,9 +52,6 @@ fun JetReaderNavigation() {
             val bookId = it.arguments?.getString("bookId")
             BookDetailsScreen(navController, bookId, viewModel)
         }
-        composable(JetScreens.StatsScreen.name) {
-            StatsScreen(navController)
-        }
         composable(JetScreens.UpdateScreen.name+"/{bookId}",
             arguments = listOf(
                 navArgument("bookId") {
@@ -69,9 +59,14 @@ fun JetReaderNavigation() {
                 }
             )
         ) {
-            val viewModel: BookDetailsViewModel = hiltViewModel()
+            val viewModel: HomeScreenViewModel = hiltViewModel()
             val bookId = it.arguments?.getString("bookId")
             UpdateScreen(navController, bookId, viewModel)
+        }
+
+        composable(JetScreens.StatsScreen.name){
+            val viewModel = hiltViewModel<HomeScreenViewModel>()
+            StatsScreen(navController, viewModel)
         }
 
     }

@@ -22,6 +22,8 @@ data class JetBook(
     var price: String? = null,
     var currency: String? = null,
     var buyLink: String? = null,
+    @get:PropertyName("favorite")
+    @set:PropertyName("favorite")
     var isFavorite: Boolean = false,
     var notes: String? = null,
     val isRead: Boolean? = null,

@@ -26,10 +26,11 @@ import kotlinx.coroutines.delay
 @Composable
 fun JetReaderSplashScreen(navController: NavController) {
 
+
     val scale = remember {
         Animatable(0f)
     }
-    LaunchedEffect(key1 = true){
+    LaunchedEffect(key1 = true) {
         scale.animateTo(
             targetValue = 0.9f,
             animationSpec = tween(
@@ -40,7 +41,7 @@ fun JetReaderSplashScreen(navController: NavController) {
             )
         )
         delay(2000L)
-        if(FirebaseAuth.getInstance().currentUser != null)
+        if (FirebaseAuth.getInstance().currentUser != null)
             navController.navigate(JetScreens.HomeScreen.name)
         else
             navController.navigate(JetScreens.LoginSignUpScreen.name)
@@ -59,8 +60,8 @@ fun JetReaderSplashScreen(navController: NavController) {
             width = 2.dp,
             color = Color.LightGray
         )
-    ){
-        Column (
+    ) {
+        Column(
             modifier = Modifier
                 .padding(1.dp),
             verticalArrangement = Arrangement.Center,

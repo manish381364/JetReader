@@ -2,6 +2,10 @@ package com.littlebit.jetreader.components
 
 import android.annotation.SuppressLint
 import android.util.Log
+import android.view.MotionEvent
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,15 +19,18 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
@@ -36,6 +43,8 @@ import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import com.littlebit.jetreader.model.JetBook
 import com.littlebit.jetreader.navigation.JetScreens
 import com.littlebit.jetreader.screens.home.*
@@ -59,8 +68,7 @@ fun HomeFullContent(
             }
             Log.d("FIREBASE", "HomeScreen: $books")
         }
-        if (books.isEmpty()) LinearProgressIndicator(Modifier.align(Alignment.Center))
-        else HomeContent(books = books, navController = navController)
+        HomeContent(books = books, navController = navController)
     }
 }
 
@@ -153,7 +161,7 @@ fun HomeContent(
     books: List<JetBook>,
     navController: NavController
 ) {
-    FirebaseAuth.getInstance().currentUser?.email?.split("@")?.get(0)
+    val userName = FirebaseAuth.getInstance().currentUser?.email?.split("@")?.get(0)
     Column(
         modifier = Modifier
             .padding(2.dp)
@@ -161,28 +169,41 @@ fun HomeContent(
         verticalArrangement = Arrangement.SpaceEvenly,
     ) {
 
-        val readingBooks = books.filter { it.startedReading != null && it.finishedReading==null}
-        val finishedBooks = books.filter { it.finishedReading!=null }
-        val notStartedBooks = books.filter { it.startedReading == null}
-        if(readingBooks.isNotEmpty()){
-            BooksRowList(books = readingBooks, navController, label = "Reading Now", showProfile = true)
+        val readingBooks = books.filter { it.startedReading != null && it.finishedReading == null }
+        val finishedBooks = books.filter { it.finishedReading != null }
+        val notStartedBooks = books.filter { it.startedReading == null }
+        if (readingBooks.isNotEmpty()) {
+            BooksRowList(
+                books = readingBooks,
+                navController,
+                label = "Reading Now",
+                showProfile = true
+            )
+        } else {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                TitleSections("Not Reading Any Book!")
+                ProfileIcon(navController, userName)
+            }
         }
-        else{
-            Text("Reading List is Empty!", modifier = Modifier
-                .padding(5.dp)
-                .fillMaxWidth()
-                .align(Alignment.CenterHorizontally))
-        }
-        if(notStartedBooks.isNotEmpty()){
+        if (notStartedBooks.isNotEmpty()) {
             BooksRowList(books = notStartedBooks, navController)
+        } else {
+            Text(
+                "No books in reading list! Add Books", modifier = Modifier
+                    .padding(5.dp)
+                    .fillMaxWidth()
+                    .align(Alignment.CenterHorizontally)
+            )
         }
-        else{
-            Text("No books in reading list! Add Books", modifier = Modifier
-                .padding(5.dp)
-                .fillMaxWidth()
-                .align(Alignment.CenterHorizontally))
-        }
-        if(finishedBooks.isNotEmpty()) BooksRowList(books = finishedBooks, navController, label = "Finished Books")
+        if (finishedBooks.isNotEmpty()) BooksRowList(
+            books = finishedBooks,
+            navController,
+            label = "Finished Books"
+        )
     }
 }
 
@@ -261,6 +282,7 @@ fun HorizontalScrollableComponent(
 }
 
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ListCard(
     book: JetBook = JetBook(
@@ -311,10 +333,51 @@ fun ListCard(
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    var favorite by remember { mutableStateOf(book.isFavorite) }
+
+                    var selected by remember {
+                        mutableStateOf(false)
+                    }
+                    val size by animateDpAsState(
+                        targetValue = if (selected) 42.dp else 34.dp,
+                        spring(Spring.DampingRatioMediumBouncy)
+                    )
+                    val iconColor = if (favorite) Color.Red.copy(0.6f) else Color.Gray
+                    val icon =
+                        if (favorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder
                     Icon(
-                        imageVector = Icons.Rounded.FavoriteBorder,
+                        imageVector = icon,
                         contentDescription = "Favorite",
-                        modifier = Modifier.padding(bottom = 1.dp)
+                        modifier = Modifier
+                            .padding(bottom = 1.dp)
+                            .width(size)
+                            .height(size)
+                            .pointerInteropFilter {
+                                when (it.action) {
+                                    MotionEvent.ACTION_DOWN -> {
+                                        selected = true
+                                        val fireStore = Firebase.firestore
+                                        val favValue = !favorite
+                                        fireStore
+                                            .collection("books")
+                                            .document(book.id.toString())
+                                            .update("favorite", favValue)
+                                            .addOnSuccessListener {
+                                                Log.d(
+                                                    "ListCard",
+                                                    "ListCard: ${book.title} is now a favorite"
+                                                )
+                                                favorite = favValue
+                                            }
+                                            .addOnFailureListener(Exception::printStackTrace)
+                                    }
+                                    MotionEvent.ACTION_UP -> {
+                                        selected = false
+                                    }
+                                }
+                                true
+                            },
+                        tint = iconColor,
                     )
                     BookRating(book.rating)
                 }
@@ -349,7 +412,8 @@ fun ListCard(
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.Bottom
         ) {
-            val readingStatus = if(book.startedReading != null && book.finishedReading == null) "Reading" else if(book.finishedReading != null && book.startedReading != null) "Read" else "Not Started"
+            val readingStatus =
+                if (book.startedReading != null && book.finishedReading == null) "Reading" else if (book.finishedReading != null && book.startedReading != null) "Read" else "Not Started"
             RoundedButton(label = readingStatus, radius = 22, onClick = {})
         }
     }

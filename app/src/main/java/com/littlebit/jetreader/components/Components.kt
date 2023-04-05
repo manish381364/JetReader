@@ -1,7 +1,12 @@
 package com.littlebit.jetreader.components
 
+import android.app.Activity
+import android.content.Context
 import android.util.Log
 import android.util.Patterns
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -22,16 +27,22 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.common.api.ApiException
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 import com.littlebit.jetreader.R
+import com.littlebit.jetreader.navigation.JetScreens
 import com.littlebit.jetreader.utils.isValidPassWord
 
 // Icons
@@ -126,7 +137,6 @@ fun GoogleIcon(
 @Composable
 fun Fields(
     modifier: Modifier = Modifier,
-    navController: NavHostController,
     loading: MutableState<Boolean>,
     isCreateAccount: MutableState<Boolean>,
     onDone: (String, String) -> Unit = { _, _ -> },
@@ -190,7 +200,7 @@ fun Fields(
                     .fillMaxWidth()
                     .padding(10.dp),
                 inputText = confirmPassword,
-                isconfirmPassword = true,
+                isConfirmPassword = true,
                 imeAction = ImeAction.Done,
                 enabled = !loading.value,
                 passWordVisibility = confirmPasswordVisibility,
@@ -226,25 +236,22 @@ fun Fields(
             )
         }
         SubmitButton(
-            navController,
+            isCreateAccount = isCreateAccount,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 10.dp, end = 10.dp, top = 5.dp),
             loading = loading,
-            valid = valid,
-            onClick = {
-                onDone(email.value.trim(), password.value.trim())
-                keyBoardController?.hide()
-            },
-            isCreateAccount = isCreateAccount
-        )
+            valid = valid
+        ) {
+            onDone(email.value.trim(), password.value.trim())
+            keyBoardController?.hide()
+        }
     }
 }
 
 
 @Composable
 fun SubmitButton(
-    navController: NavHostController,
     isCreateAccount: MutableState<Boolean>,
     modifier: Modifier = Modifier,
     loading: MutableState<Boolean>,
@@ -272,7 +279,7 @@ fun PasswordField(
     passWordVisibility: MutableState<Boolean>,
     oncAction: KeyboardActions = KeyboardActions.Default,
     imeAction: ImeAction,
-    isconfirmPassword: Boolean = false,
+    isConfirmPassword: Boolean = false,
     enabled: Boolean = true,
 ) {
     val visualTransformation = remember(passWordVisibility.value) {
@@ -286,7 +293,7 @@ fun PasswordField(
         modifier = modifier,
         inputText = inputText,
         label = "Password",
-        placeholder = if (isconfirmPassword) "Confirm password" else "Enter your password",
+        placeholder = if (isConfirmPassword) "Confirm password" else "Enter your password",
         keyBoardType = KeyboardType.Password,
         imeAction = imeAction,
         oncAction = oncAction,
@@ -387,9 +394,40 @@ fun InputField(
     )
 }
 
-@Preview(showBackground = true)
 @Composable
-fun SocialMediaButtons() {
+fun SocialMediaButtons(
+    googleSignInClient: GoogleSignInClient,
+    navController: NavHostController
+) {
+    val context = LocalContext.current
+    val googleSignInLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            try {
+                val account = task.getResult(ApiException::class.java)
+                // Signed in successfully, handle the user's details
+                Log.d("SUCCESS", "SocialMediaButtons: ${account?.displayName}")
+                val firebaseAuth = FirebaseAuth.getInstance()
+                firebaseAuth.signInWithCredential(
+                    GoogleAuthProvider.getCredential(account?.idToken, null)
+                ).addOnCompleteListener { signInTask ->
+                    if (signInTask.isSuccessful) {
+                        Log.d("FIRE SUCCESS", "SocialMediaButtons: ${signInTask.result}")
+                        makeToast(context, "Login Successful")
+                        navController.navigate(JetScreens.HomeScreen.name)
+                    } else {
+                        Log.d("FIRE ERROR", "SocialMediaButtons: ${signInTask.exception}")
+                    }
+                }
+            } catch (e: ApiException) {
+                // Handle sign-in failure
+                makeToast(context, "Login Failed")
+                Log.d("ERROR", "SocialMediaButtons: ${e.message}")
+            }
+        }
+    }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -397,7 +435,6 @@ fun SocialMediaButtons() {
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-
         SocialMediaButton(
             modifier = Modifier
                 .padding(5.dp)
@@ -406,14 +443,17 @@ fun SocialMediaButtons() {
             icon = Icons.Rounded.Facebook
         ) {
             Log.d("FacebookButton", "Facebook Button Clicked: Facebook")
+            makeToast(context, "Coming Soon")
         }
         GoogleIcon(
             modifier = Modifier
                 .padding(5.dp)
                 .size(50.dp),
-            color = MaterialTheme.colorScheme.inverseSurface
+            color = MaterialTheme.colorScheme.inverseSurface,
         ) {
             Log.d("GoogleButton", "GoogleButton Clicked: Google")
+            val signInIntent = googleSignInClient.signInIntent
+            googleSignInLauncher.launch(signInIntent)
         }
 
         AppleIcon(
@@ -423,8 +463,15 @@ fun SocialMediaButtons() {
             color = MaterialTheme.colorScheme.onSurface
         ) {
             Log.d("AppleButton", "AppleButton Clicked: Apple")
+            makeToast(context, "Coming Soon")
         }
     }
+}
+
+
+
+fun makeToast(context: Context, s: String) {
+    Toast.makeText(context, s, Toast.LENGTH_SHORT).show()
 }
 
 @Composable
@@ -499,6 +546,9 @@ fun SignUpOrLogin(
         )
     }
 }
+
+
+
 
 
 

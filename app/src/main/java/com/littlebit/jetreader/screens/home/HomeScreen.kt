@@ -25,7 +25,11 @@ fun HomeScreen(
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            JetReaderAppBar(title = "JetReader", showProfile = true){
+            JetReaderAppBar(title = "JetReader", showProfile = true,
+                leadingIconOnClick = {
+                    navController.navigate(JetScreens.FavoriteScreen.name)
+                },
+            ){
                 navController.navigate(JetScreens.LoginSignUpScreen.name)
                 navController.popBackStack(JetScreens.HomeScreen.name, inclusive = true, saveState = false)
                 FirebaseAuth.getInstance().signOut()

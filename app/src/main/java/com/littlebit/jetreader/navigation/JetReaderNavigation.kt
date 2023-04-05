@@ -11,6 +11,7 @@ import androidx.navigation.navArgument
 import com.littlebit.jetreader.screens.JetReaderSplashScreen
 import com.littlebit.jetreader.screens.details.BookDetailsScreen
 import com.littlebit.jetreader.screens.details.BookDetailsViewModel
+import com.littlebit.jetreader.screens.favorite.FavoriteScreen
 import com.littlebit.jetreader.screens.home.HomeScreen
 import com.littlebit.jetreader.screens.home.HomeScreenViewModel
 import com.littlebit.jetreader.screens.login.LoginSignUpScreen
@@ -68,6 +69,10 @@ fun JetReaderNavigation() {
             val viewModel = hiltViewModel<HomeScreenViewModel>()
             StatsScreen(navController, viewModel)
         }
-
+        composable(JetScreens.FavoriteScreen.name){
+            val viewModel = hiltViewModel<HomeScreenViewModel>()
+            FavoriteScreen(navController, viewModel)
+        }
     }
 }
+

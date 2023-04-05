@@ -10,9 +10,13 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.littlebit.jetreader.R
 import com.littlebit.jetreader.components.*
 import com.littlebit.jetreader.navigation.JetScreens
 import com.littlebit.jetreader.utils.isValidEmail
@@ -38,6 +42,12 @@ fun LoginScreen(
     isCreateAccount: MutableState<Boolean>,
     viewModel: LoginScreenViewModel
 ) {
+    val context = LocalContext.current
+    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        .requestIdToken(context.getString(R.string.default_web_client_id))
+        .requestEmail()
+        .build()
+    val googleSignInClient = GoogleSignIn.getClient(context, gso)
     Surface(
         modifier = Modifier
             .fillMaxSize()
@@ -56,7 +66,6 @@ fun LoginScreen(
 
             Fields(
                 modifier = Modifier.padding(top = 5.dp, bottom = 15.dp),
-                navController,
                 loading = loading,
                 isCreateAccount = isCreateAccount,
             ) { email, password ->
@@ -96,7 +105,7 @@ fun LoginScreen(
             })
             if(viewModel.loadingState.value == true) LinearProgressIndicator()
             TextBetweenDivider(text = "Or continue with")
-            SocialMediaButtons()
+            SocialMediaButtons(googleSignInClient = googleSignInClient, navController = navController)
         }
     }
 }

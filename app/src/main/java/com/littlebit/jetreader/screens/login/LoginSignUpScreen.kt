@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -93,6 +94,7 @@ fun LoginScreen(
             SignUpOrLogin(signUp = isCreateAccount, modifier = Modifier.fillMaxWidth(), onClick = {
                 isCreateAccount.value = !isCreateAccount.value
             })
+            if(viewModel.loadingState.value == true) LinearProgressIndicator()
             TextBetweenDivider(text = "Or continue with")
             SocialMediaButtons()
         }

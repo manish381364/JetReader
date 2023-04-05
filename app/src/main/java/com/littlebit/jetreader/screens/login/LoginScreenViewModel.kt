@@ -13,11 +13,11 @@ import com.littlebit.jetreader.model.JetUser
 import kotlinx.coroutines.launch
 
 class LoginScreenViewModel: ViewModel() {
-//    val loadingState = MutableStateFlow(LoadingState.IDLE)
     private val auth: FirebaseAuth = Firebase.auth
     private val _loadingState = MutableLiveData(false)
     val loadingState: LiveData<Boolean> = _loadingState
     fun signUp(email: String, password: String, takeHome: () -> Unit) = viewModelScope.launch{
+        _loadingState.value = true
         try {
             auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener{
@@ -29,23 +29,33 @@ class LoginScreenViewModel: ViewModel() {
                         Log.d("LOGIN", "signUp: Success")
                     }
                     else{
+                        _loadingState.value = false
                         Log.d("LOGIN_ERROR", "signUp: ${it.exception}")
                     }
                 }
         }
         catch (Ex: Exception) {
+            _loadingState.value = false
             Log.d("LOGIN_ERROR", "signUp: ${Ex.message}")
         }
     }
 
     private fun createUser(displayName: String?) {
+        _loadingState.value = true
         val userId = auth.currentUser?.uid
         val user = JetUser(userId = userId!!, displayName = displayName!!, email = auth.currentUser?.email!!, quote = "", profession = "", avatarUrl = "").toMap()
         FirebaseFirestore.getInstance().collection("users")
-            .add(user)
+            .add(user).addOnSuccessListener {
+                _loadingState.value = false
+                Log.d("LOGIN", "signUp: Success")
+            }.addOnFailureListener {
+                _loadingState.value = false
+                Log.d("LOGIN_ERROR", "signUp: ${it.message}")
+            }
     }
 
     fun signIn(email: String, password: String, takeHome: () -> Unit) =  viewModelScope.launch{
+        _loadingState.value = true
         try {
             auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener{
@@ -55,11 +65,13 @@ class LoginScreenViewModel: ViewModel() {
                         takeHome()
                     }
                     else{
+                        _loadingState.value = false
                         Log.d("LOGIN_ERROR", "signUp: ${it.exception}")
                     }
                 }
         }
         catch (Ex: Exception) {
+            _loadingState.value = false
             Log.d("LOGIN_ERROR", "signUp: ${Ex.message}")
         }
     }

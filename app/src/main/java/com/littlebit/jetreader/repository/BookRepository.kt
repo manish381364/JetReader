@@ -44,7 +44,6 @@ import javax.inject.Inject
 //}
 class BookRepository @Inject constructor(private val api: BooksApi) {
     suspend fun getBooks(searchQuery: String): Resource<List<Item>> {
-        val x: Long =  3905740000
         return try {
             Resource.Loading(data = true)
 

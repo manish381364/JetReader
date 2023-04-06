@@ -38,8 +38,8 @@ fun HomeScreen(
         floatingActionButton = {
             FabContent(onClick = { navController.navigate(JetScreens.SearchScreen.name) })
         },
-    ) { it ->
-        HomeFullContent(it, viewModel, navController)
+    ) { padding ->
+        HomeFullContent(padding, viewModel, navController)
     }
 }
 

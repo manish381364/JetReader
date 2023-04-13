@@ -30,9 +30,9 @@ fun HomeScreen(
                     navController.navigate(JetScreens.FavoriteScreen.name)
                 },
             ){
-                navController.navigate(JetScreens.LoginSignUpScreen.name)
-                navController.popBackStack(JetScreens.HomeScreen.name, inclusive = true, saveState = false)
                 FirebaseAuth.getInstance().signOut()
+                navController.popBackStack(JetScreens.HomeScreen.name, inclusive = true, saveState = false)
+                navController.navigate(JetScreens.LoginSignUpScreen.name)
             }
         },
         floatingActionButton = {

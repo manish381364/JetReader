@@ -167,7 +167,7 @@ fun BookDetailsImage(
         model = viewModel.bookResource.value.data?.volumeInfo?.imageLinks?.thumbnail
             ?: "",
         contentDescription = "Book Cover Image",
-        contentScale = ContentScale.Crop,
+        contentScale = ContentScale.Fit,
         onLoading = {
             isLoading.value = true
         },

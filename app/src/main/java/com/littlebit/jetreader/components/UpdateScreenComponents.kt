@@ -42,7 +42,7 @@ fun BookInfoCard(bookInfo: JetBook?) {
     ElevatedCard(
         modifier = Modifier
             .fillMaxWidth(0.9f)
-            .height(200.dp),
+            .requiredHeightIn(min = 200.dp, max = 300.dp),
         shape = RoundedCornerShape(80.dp)
     ) {
         Column(
@@ -308,10 +308,11 @@ fun LoadImage(
     AsyncImage(
         model = book?.image,
         contentDescription = null,
-        contentScale = ContentScale.Crop,
+        contentScale = ContentScale.Fit,
         modifier = Modifier
             .clip(RoundedCornerShape(8.dp))
-            .size(100.dp),
+            .width(100.dp)
+            .padding(top = 8.dp),
     )
 }
 

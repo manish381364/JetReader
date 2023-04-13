@@ -21,7 +21,6 @@ fun BookDetailsScreen(
     bookId: String?,
     viewModel: BookDetailsViewModel
 ) {
-    // Sticky Top Image of book cover then scrollable content
     viewModel.getBookById(bookId ?: "")
     Scaffold(
         topBar = {

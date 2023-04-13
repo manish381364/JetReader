@@ -15,6 +15,7 @@ Material Design 3 provides a modern and intuitive design to the app, while Corou
 
 
 
+
 ## Different Screens
 #### 1. LoginScreen 2. SignUpScreen 3. HomeScreen 4. SearchScreen 5. BookDetailsScreen 6. UpdateScreen 7. BookStatusScreen
 <img class="image" src="https://raw.githubusercontent.com/manish381364/JetReader/master/app/src/main/res/drawable/LoginScreen.png" width="300"/>  <img src="https://raw.githubusercontent.com/manish381364/JetReader/master/app/src/main/res/drawable/SignUpScreen.png" width="300"/> <img src="https://raw.githubusercontent.com/manish381364/JetReader/master/app/src/main/res/drawable/HomScreen.png" width="300"/> <img src="https://raw.githubusercontent.com/manish381364/JetReader/master/app/src/main/res/drawable/SearchScreen.png" width="300"/> <img src="https://raw.githubusercontent.com/manish381364/JetReader/master/app/src/main/res/drawable/BookDetailsScreen.png" width="300"/>  <img src="https://raw.githubusercontent.com/manish381364/JetReader/master/app/src/main/res/drawable/UpdateScreen.png" width="300"/>  <img src="https://raw.githubusercontent.com/manish381364/JetReader/master/app/src/main/res/drawable/BookStatusScreen.png" width="300"/>

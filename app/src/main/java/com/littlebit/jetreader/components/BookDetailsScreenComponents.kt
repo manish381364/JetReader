@@ -1,17 +1,33 @@
 package com.littlebit.jetreader.components
 
+import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,6 +44,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.littlebit.jetreader.model.JetBook
 import com.littlebit.jetreader.navigation.JetScreens
 import com.littlebit.jetreader.screens.details.BookDetailsViewModel
+import com.littlebit.jetreader.screens.home.HomeScreenViewModel
 import org.jsoup.Jsoup
 
 @Composable
@@ -78,7 +95,9 @@ fun ExpandableCard(
 
 fun floatingActionOnClick(
     viewModel: BookDetailsViewModel,
-    navController: NavHostController
+    navController: NavHostController,
+    context: Context,
+    homeViewModel: HomeScreenViewModel
 ) {
     val book = JetBook(
         title = viewModel.bookResource.value.data?.volumeInfo?.title ?: "",
@@ -100,7 +119,7 @@ fun floatingActionOnClick(
         userId = FirebaseAuth.getInstance().currentUser?.uid.toString(),
         rating = 2,
     )
-    saveToDataBase(book, navController)
+    saveToDataBase(book, navController, context, homeViewModel)
 }
 
 @Composable
@@ -182,24 +201,44 @@ fun BookDetailsImage(
 
 fun saveToDataBase(
     book: JetBook,
-    navController: NavController
+    navController: NavController,
+    context: Context,
+    viewModel: HomeScreenViewModel
 ) {
 
     val db = FirebaseFirestore.getInstance()
     val dbCollection = db.collection("books")
-    if (book.id != "") {
+    val alreadyExistBook = mutableStateOf(false)
+    val books: List<JetBook>
+    val currentUser = FirebaseAuth.getInstance().currentUser
+    if (!viewModel.data.value.data.isNullOrEmpty()) {
+        books = viewModel.data.value.data!!.toList().filter { jetBook ->
+            jetBook.userId == currentUser?.uid.toString() && jetBook.title == book.title
+        }
+        alreadyExistBook.value = books.isNotEmpty()
+    }
+    if (book.id != "" && !alreadyExistBook.value) {
         dbCollection.add(book).addOnSuccessListener {
             val docId = it.id
             db.document("books/$docId").update(hashMapOf("id" to docId) as Map<String, Any>)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         Log.d("FIREBASE", "DocumentSnapshot successfully updated!")
-                        navController.navigate(JetScreens.HomeScreen.name)
+                        navController.navigate(JetScreens.HomeScreen.name) {
+                            popUpTo(JetScreens.HomeScreen.name) {
+                                inclusive = true
+                            }
+                        }
                     } else {
                         Log.d("FIREBASE ADD", "Error updating document", task.exception)
-
                     }
                 }
         }
+    } else if (alreadyExistBook.value) {
+        Toast.makeText(
+            context,
+            "Book already exist in your library",
+            Toast.LENGTH_SHORT
+        ).show()
     }
 }

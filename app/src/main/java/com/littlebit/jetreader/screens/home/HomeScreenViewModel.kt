@@ -16,6 +16,7 @@ import javax.inject.Inject
 class HomeScreenViewModel @Inject constructor(private val repository: FireRepository):ViewModel(){
     val data: MutableState<DataOrException<List<JetBook>, Boolean, Exception>>
     = mutableStateOf(DataOrException(null, loading = true, exception = Exception("")))
+    val isDarkMode: MutableState<Boolean> = mutableStateOf(false)
     init {
         getAllBooksFromDataBase()
     }

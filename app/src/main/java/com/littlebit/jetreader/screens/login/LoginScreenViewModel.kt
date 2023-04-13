@@ -15,7 +15,9 @@ import kotlinx.coroutines.launch
 class LoginScreenViewModel: ViewModel() {
     private val auth: FirebaseAuth = Firebase.auth
     private val _loadingState = MutableLiveData(false)
+    private val _signUpSucces = MutableLiveData(false)
     val loadingState: LiveData<Boolean> = _loadingState
+    val signUpSucces = _signUpSucces
     fun signUp(email: String, password: String, takeHome: () -> Unit) = viewModelScope.launch{
         _loadingState.value = true
         try {
@@ -25,17 +27,20 @@ class LoginScreenViewModel: ViewModel() {
                         val displayName = it.result.user?.email?.split("@")?.get(0)
                         _loadingState.value = false
                         createUser(displayName)
-                        takeHome()
                         Log.d("LOGIN", "signUp: Success")
+                        signUpSucces.value = true
+                        takeHome()
                     }
                     else{
                         _loadingState.value = false
+                        signUpSucces.value = true
                         Log.d("LOGIN_ERROR", "signUp: ${it.exception}")
                     }
                 }
         }
         catch (Ex: Exception) {
             _loadingState.value = false
+            signUpSucces.value = false
             Log.d("LOGIN_ERROR", "signUp: ${Ex.message}")
         }
     }

@@ -24,7 +24,11 @@ fun FavoriteScreen(navController: NavHostController, viewModel: HomeScreenViewMo
         topBar = {
             JetReaderAppBar(title = "Favorite Books", showProfile = false,
                 leadingIconOnClick = {
-                    navController.navigate(JetScreens.HomeScreen.name)
+                    navController.navigate(JetScreens.HomeScreen.name){
+                        popUpTo(JetScreens.HomeScreen.name){
+                            inclusive = true
+                        }
+                    }
                 },
                 leadingIcon = Icons.Rounded.ArrowBack,
             )

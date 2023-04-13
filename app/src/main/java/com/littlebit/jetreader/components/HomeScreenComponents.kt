@@ -3,22 +3,17 @@ package com.littlebit.jetreader.components
 import android.annotation.SuppressLint
 import android.util.Log
 import android.view.MotionEvent
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.spring
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Logout
-import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.Star
@@ -40,6 +35,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.google.firebase.auth.FirebaseAuth
@@ -53,7 +49,7 @@ import com.littlebit.jetreader.screens.home.*
 fun HomeFullContent(
     it: PaddingValues,
     viewModel: HomeScreenViewModel,
-    navController: NavController
+    navController: NavController,
 ) {
     Box(
         modifier = Modifier
@@ -93,23 +89,25 @@ fun JetReaderAppBar(
 
         },
         navigationIcon = {
-            IconButton(onClick = { leadingIconOnClick() }) {
-                Icon(
-                    modifier = Modifier.clip(RoundedCornerShape(12.dp)),
-                    imageVector = if (!showProfile) leadingIcon
-                        ?: Icons.Outlined.Favorite else Icons.Outlined.Favorite,
-                    contentDescription = "leading icon"
-                )
-            }
+            if (leadingIcon != null)
+                IconButton(onClick = { leadingIconOnClick() }) {
+                    Icon(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp)),
+                        imageVector = leadingIcon,
+                        contentDescription = "leading icon",
+                    )
+                }
         },
         actions = {
-            if (showProfile) {
+            if (trailingIcon != null) {
                 IconButton(onClick = {
                     trailingIconOnClick()
                 }) {
                     Icon(
-                        imageVector = trailingIcon ?: Icons.Default.Logout,
-                        contentDescription = "trailing icon"
+                        imageVector = trailingIcon,
+                        contentDescription = "trailing icon",
+                        tint = if (showProfile) Color.Red.copy(0.7f) else MaterialTheme.colorScheme.surfaceTint
                     )
                 }
             }
@@ -233,19 +231,21 @@ fun ProfileIcon(
     navController: NavController,
     userName: String? = FirebaseAuth.getInstance().currentUser?.email?.split("@")?.get(0)
 ) {
+    val profileImage = FirebaseAuth.getInstance().currentUser?.photoUrl
     Column(
         modifier = Modifier.width(70.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Icon(
-            imageVector = Icons.Filled.AccountCircle,
+        AsyncImage(
+            model = profileImage?: Icons.Filled.AccountCircle,
             contentDescription = "Profile",
             modifier = Modifier
                 .clickable { navController.navigate(JetScreens.StatsScreen.name) }
                 .padding(start = 5.dp, top = 5.dp)
+                .clip(CircleShape)
                 .size(35.dp),
-            tint = MaterialTheme.colorScheme.secondary
+            contentScale = ContentScale.Crop
         )
         Text(
             modifier = Modifier
@@ -334,7 +334,6 @@ fun ListCard(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     var favorite by remember { mutableStateOf(book.isFavorite) }
-
                     var selected by remember {
                         mutableStateOf(false)
                     }
@@ -342,7 +341,10 @@ fun ListCard(
                         targetValue = if (selected) 42.dp else 34.dp,
                         spring(Spring.DampingRatioMediumBouncy)
                     )
-                    val iconColor = if (favorite) Color.Red.copy(0.6f) else Color.Gray
+                    val iconColor by animateColorAsState(
+                        targetValue = if (favorite) Color.Red.copy(0.6f) else Color.Gray,
+                        animationSpec = tween(durationMillis = 500, easing = EaseInOutBounce)
+                    )
                     val icon =
                         if (favorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder
                     Icon(
@@ -371,6 +373,7 @@ fun ListCard(
                                             }
                                             .addOnFailureListener(Exception::printStackTrace)
                                     }
+
                                     MotionEvent.ACTION_UP -> {
                                         selected = false
                                     }
@@ -471,10 +474,21 @@ fun BookRating(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
+            val infiniteAnimation = rememberInfiniteTransition()
+            val tintAnimation by infiniteAnimation.animateFloat(
+                initialValue = 0f,
+                targetValue = 1f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(durationMillis = 1000, easing = LinearEasing),
+                    repeatMode = RepeatMode.Reverse
+                )
+            )
             Icon(
                 imageVector = Icons.Rounded.Star,
                 contentDescription = "Favorite",
-                modifier = Modifier.padding(bottom = 1.dp)
+                modifier = Modifier.padding(bottom = 1.dp),
+                tint = Color.Yellow.copy(tintAnimation)
             )
             Text(
                 modifier = Modifier.padding(5.dp),

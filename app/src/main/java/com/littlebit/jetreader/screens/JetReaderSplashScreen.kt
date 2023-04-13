@@ -41,10 +41,19 @@ fun JetReaderSplashScreen(navController: NavController) {
             )
         )
         delay(2000L)
-        if (FirebaseAuth.getInstance().currentUser != null)
-            navController.navigate(JetScreens.HomeScreen.name)
+        if (FirebaseAuth.getInstance().currentUser != null){
+            navController.navigate(JetScreens.HomeScreen.name){
+                popUpTo(JetScreens.SplashScreen.name) {
+                    inclusive = true
+                }
+            }
+        }
         else
-            navController.navigate(JetScreens.LoginSignUpScreen.name)
+            navController.navigate(JetScreens.LoginSignUpScreen.name){
+                popUpTo(JetScreens.SplashScreen.name) {
+                    inclusive = true
+                }
+            }
     }
 
 

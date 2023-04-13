@@ -10,9 +10,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.littlebit.jetreader.components.*
+import com.littlebit.jetreader.screens.home.HomeScreenViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -22,6 +25,7 @@ fun BookDetailsScreen(
     viewModel: BookDetailsViewModel
 ) {
     viewModel.getBookById(bookId ?: "")
+    val context = LocalContext.current
     Scaffold(
         topBar = {
             JetReaderAppBar(
@@ -66,8 +70,9 @@ fun BookDetailsScreen(
                     .padding(15.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
+                val homeViewModel: HomeScreenViewModel = hiltViewModel()
                 FloatingActionButton(onClick = {
-                    floatingActionOnClick(viewModel, navController)
+                    floatingActionOnClick(viewModel, navController, context, homeViewModel)
                 }) {
                     Text("Save")
                 }

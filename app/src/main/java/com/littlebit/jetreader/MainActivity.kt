@@ -3,11 +3,15 @@ package com.littlebit.jetreader
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.littlebit.jetreader.navigation.JetReaderNavigation
@@ -19,14 +23,17 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            JetReaderTheme {
-                JetReaderApp()
+            val theme = isSystemInDarkTheme()
+            val isDarkTheme = rememberSaveable { mutableStateOf(theme) }
+            JetReaderTheme(darkTheme = isDarkTheme.value) {
+                JetReaderApp(isDarkTheme)
             }
         }
     }
 }
+
 @Composable
-fun JetReaderApp() {
+fun JetReaderApp(isDarkTheme: MutableState<Boolean>) {
     Surface(
         modifier = Modifier
             .fillMaxSize()
@@ -35,7 +42,7 @@ fun JetReaderApp() {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            JetReaderNavigation()
+            JetReaderNavigation(isDarkTheme)
         }
     }
 }

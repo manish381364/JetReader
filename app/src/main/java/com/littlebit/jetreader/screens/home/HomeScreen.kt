@@ -1,22 +1,22 @@
 package com.littlebit.jetreader.screens.home
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.rounded.Menu
+import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
-import com.google.firebase.auth.FirebaseAuth
 import com.littlebit.jetreader.components.FabContent
 import com.littlebit.jetreader.components.HomeFullContent
 import com.littlebit.jetreader.components.JetReaderAppBar
 import com.littlebit.jetreader.navigation.JetScreens
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     navController: NavController = NavHostController(LocalContext.current),
@@ -25,14 +25,15 @@ fun HomeScreen(
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            JetReaderAppBar(title = "JetReader", showProfile = true,
+            JetReaderAppBar(
+                title = "JetReader", showProfile = true,
+                leadingIcon = Icons.Rounded.Menu,
                 leadingIconOnClick = {
-                    navController.navigate(JetScreens.FavoriteScreen.name)
+                    navController.navigate(JetScreens.DrawerScreen.name)
                 },
-            ){
-                FirebaseAuth.getInstance().signOut()
-                navController.popBackStack(JetScreens.HomeScreen.name, inclusive = true, saveState = false)
-                navController.navigate(JetScreens.LoginSignUpScreen.name)
+                trailingIcon = Icons.Filled.Favorite,
+            ) {
+                navController.navigate(JetScreens.FavoriteScreen.name)
             }
         },
         floatingActionButton = {

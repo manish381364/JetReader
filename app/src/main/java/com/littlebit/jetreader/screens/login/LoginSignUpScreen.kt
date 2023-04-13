@@ -76,7 +76,14 @@ fun LoginScreen(
                         Log.d("Done", "LoginScreen: $email, $password")
                         if (isValidEmail(email) && isValidPassWord(password)) {
                             viewModel.signUp(email, password){
-                                navController.navigate(JetScreens.HomeScreen.name)
+                                if(viewModel.loadingState.value == false && viewModel.signUpSucces.value == true){
+                                    navController.navigate(JetScreens.HomeScreen.name){
+                                        popUpTo(JetScreens.LoginSignUpScreen.name){
+                                            inclusive = true
+                                        }
+                                    }
+                                }
+
                             }
                             Log.d("Valid", "LoginScreen: $email, $password")
                         } else {
@@ -89,7 +96,11 @@ fun LoginScreen(
                     if(!loading.value) {
                         loading.value = true
                         viewModel.signIn(email, password){
-                            navController.navigate(JetScreens.HomeScreen.name)
+                            navController.navigate(JetScreens.HomeScreen.name){
+                                popUpTo(JetScreens.LoginSignUpScreen.name){
+                                    inclusive = true
+                                }
+                            }
                         }
                         Log.d("Done", "SignUpScreen: $email, $password")
                         if (isValidEmail(email) && isValidPassWord(password)) {

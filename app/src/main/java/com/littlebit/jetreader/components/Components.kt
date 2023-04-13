@@ -416,7 +416,11 @@ fun SocialMediaButtons(
                     if (signInTask.isSuccessful) {
                         Log.d("FIRE SUCCESS", "SocialMediaButtons: ${signInTask.result}")
                         makeToast(context, "Login Successful")
-                        navController.navigate(JetScreens.HomeScreen.name)
+                        navController.navigate(JetScreens.HomeScreen.name){
+                            popUpTo(JetScreens.LoginSignUpScreen.name){
+                                inclusive = true
+                            }
+                        }
                     } else {
                         Log.d("FIRE ERROR", "SocialMediaButtons: ${signInTask.exception}")
                     }

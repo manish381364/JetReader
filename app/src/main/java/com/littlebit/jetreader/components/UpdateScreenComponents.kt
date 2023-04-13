@@ -182,7 +182,11 @@ private fun UpdateForm(
                     .update(bookToUpdate)
                     .addOnSuccessListener {
                         showToast(context, "Book Updated!")
-                        navController.navigate(JetScreens.HomeScreen.name)
+                        navController.navigate(JetScreens.HomeScreen.name){
+                            popUpTo(JetScreens.HomeScreen.name){
+                                inclusive = true
+                            }
+                        }
                         Log.d("Update", "DocumentSnapshot successfully updated!")
                     }
                     .addOnFailureListener { e ->
@@ -201,7 +205,11 @@ private fun UpdateForm(
                     .delete()
                     .addOnSuccessListener {
                         showToast(context, "Book Deleted!")
-                        navController.navigate(JetScreens.HomeScreen.name)
+                        navController.navigate(JetScreens.HomeScreen.name){
+                            popUpTo(JetScreens.HomeScreen.name){
+                                inclusive = true
+                            }
+                        }
                         Log.d("Delete", "DocumentSnapshot successfully deleted!")
                     }
                     .addOnFailureListener { e ->

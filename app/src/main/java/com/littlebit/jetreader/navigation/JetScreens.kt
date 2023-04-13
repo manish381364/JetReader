@@ -8,5 +8,6 @@ enum class JetScreens {
     BookDetailsScreen,
     StatsScreen,
     UpdateScreen,
+    DrawerScreen,
     FavoriteScreen;
 }

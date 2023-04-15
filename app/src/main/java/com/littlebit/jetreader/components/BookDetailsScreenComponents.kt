@@ -46,7 +46,6 @@ import coil.compose.AsyncImage
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.littlebit.jetreader.model.JetBook
-import com.littlebit.jetreader.navigation.JetScreens
 import com.littlebit.jetreader.screens.details.BookDetailsViewModel
 import com.littlebit.jetreader.screens.home.HomeScreenViewModel
 import org.jsoup.Jsoup
@@ -124,8 +123,9 @@ fun ExpandableCard(
 fun floatingActionOnClick(
     viewModel: BookDetailsViewModel,
     navController: NavHostController,
-    context: Context,
-    homeViewModel: HomeScreenViewModel
+    homeViewModel: HomeScreenViewModel,
+    saveClickable: MutableState<Boolean>,
+    context: Context
 ) {
     val book = JetBook(
         title = viewModel.bookResource.value.data?.volumeInfo?.title ?: "",
@@ -148,7 +148,13 @@ fun floatingActionOnClick(
         rating = 4,
         bookId = viewModel.bookResource.value.data?.id ?: "",
     )
-    saveToDataBase(book, navController, context, homeViewModel)
+    if (saveClickable.value) saveToDataBase(
+        book,
+        navController,
+        context,
+        homeViewModel,
+        saveClickable
+    )
 }
 
 @Composable
@@ -232,7 +238,8 @@ fun saveToDataBase(
     book: JetBook,
     navController: NavController,
     context: Context,
-    viewModel: HomeScreenViewModel
+    viewModel: HomeScreenViewModel,
+    saveClickable: MutableState<Boolean>
 ) {
 
     val db = FirebaseFirestore.getInstance()
@@ -256,12 +263,14 @@ fun saveToDataBase(
             )
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
+                        Toast.makeText(
+                            context,
+                            "Book Saved Successfully",
+                            Toast.LENGTH_SHORT
+                        ).show()
                         Log.d("FIREBASE", "DocumentSnapshot successfully updated!")
-                        navController.navigate(JetScreens.HomeScreen.name) {
-                            popUpTo(JetScreens.HomeScreen.name) {
-                                inclusive = true
-                            }
-                        }
+                        saveClickable.value = false
+                        navController.popBackStack()
                     } else {
                         Log.d("FIREBASE ADD", "Error updating document", task.exception)
                     }

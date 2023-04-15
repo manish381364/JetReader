@@ -84,7 +84,12 @@ fun BookDetailsScreen(
 
                 }
                 AboutBook(viewModel)
-                ExpandableCard(viewModel)
+                if (viewModel.bookResource.value.data?.volumeInfo?.description.toString()
+                        .isNotEmpty()
+                )
+                    ExpandableCard(viewModel)
+                else
+                    Text("No description available")
             }
 
             if (!isFavorite) {
@@ -96,8 +101,17 @@ fun BookDetailsScreen(
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     val homeViewModel: HomeScreenViewModel = hiltViewModel()
+                    val saveClickable = remember {
+                        mutableStateOf(true)
+                    }
                     FloatingActionButton(onClick = {
-                        floatingActionOnClick(viewModel, navController, context, homeViewModel)
+                        floatingActionOnClick(
+                            viewModel,
+                            navController,
+                            homeViewModel,
+                            saveClickable,
+                            context
+                        )
                     }) {
                         Text("Save")
                     }

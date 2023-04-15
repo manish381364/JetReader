@@ -101,10 +101,13 @@ fun JetReaderNavigation(isDarkTheme: MutableState<Boolean>) {
         }
         composable(
             JetScreens.BookDetailsScreen.name
-                    + "/{bookId}",
+                    + "/{bookId}/{isFavorite}",
             arguments = listOf(
                 navArgument("bookId") {
                     type = NavType.StringType
+                },
+                navArgument("isFavorite") {
+                    type = NavType.BoolType
                 }
             ),
             enterTransition = {
@@ -122,7 +125,8 @@ fun JetReaderNavigation(isDarkTheme: MutableState<Boolean>) {
         ) {
             val viewModel: BookDetailsViewModel = hiltViewModel()
             val bookId = it.arguments?.getString("bookId")
-            BookDetailsScreen(navController, bookId, viewModel)
+            val isFavorite = it.arguments?.getBoolean("isFavorite")
+            BookDetailsScreen(navController, bookId, viewModel, isFavorite ?: false)
         }
         composable(
             JetScreens.UpdateScreen.name + "/{bookId}",
@@ -164,7 +168,7 @@ fun JetReaderNavigation(isDarkTheme: MutableState<Boolean>) {
                 slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right, tween(800))
             }
         ) {
-            val viewModel = hiltViewModel<HomeScreenViewModel>()
+            val viewModel: HomeScreenViewModel = hiltViewModel()
             StatsScreen(navController, viewModel)
         }
         composable(
@@ -182,7 +186,7 @@ fun JetReaderNavigation(isDarkTheme: MutableState<Boolean>) {
                 slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right, tween(700))
             }
         ) {
-            val viewModel = hiltViewModel<HomeScreenViewModel>()
+            val viewModel: HomeScreenViewModel = hiltViewModel()
             FavoriteScreen(navController, viewModel)
         }
         composable(

@@ -13,10 +13,11 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeScreenViewModel @Inject constructor(private val repository: FireRepository):ViewModel(){
-    val data: MutableState<DataOrException<List<JetBook>, Boolean, Exception>>
-    = mutableStateOf(DataOrException(null, loading = true, exception = Exception("")))
-    val isDarkMode: MutableState<Boolean> = mutableStateOf(false)
+class HomeScreenViewModel @Inject constructor(private val repository: FireRepository) :
+    ViewModel() {
+    val data: MutableState<DataOrException<List<JetBook>, Boolean, Exception>> =
+        mutableStateOf(DataOrException(null, loading = true, exception = Exception("")))
+
     init {
         getAllBooksFromDataBase()
     }
@@ -25,8 +26,8 @@ class HomeScreenViewModel @Inject constructor(private val repository: FireReposi
         viewModelScope.launch {
             data.value.loading = true
             data.value = repository.getAllBooksFromDatabase()
-            if(!data.value.data.isNullOrEmpty()) data.value.loading = false
+            if (!data.value.data.isNullOrEmpty()) data.value.loading = false
         }
-        Log.d("DATA FROM FIRESTORE", "getAllBooksFromDataBase:  ${data.value.data.toString()}")
+        Log.d("DATA FROM FIRE_STORE", "getAllBooksFromDataBase:  ${data.value.data.toString()}")
     }
 }

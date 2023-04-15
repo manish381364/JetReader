@@ -27,6 +27,9 @@ fun HomeScreen(
     val trailingIconClickable = remember {
         mutableStateOf(true)
     }
+    val leadingIconClickable = remember {
+        mutableStateOf(true)
+    }
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -34,12 +37,14 @@ fun HomeScreen(
                 title = "JetReader", showProfile = true,
                 leadingIcon = Icons.Rounded.Menu,
                 leadingIconOnClick = {
-                    trailingIconClickable.value = false
+                    leadingIconClickable.value = false
                     navController.navigate(JetScreens.DrawerScreen.name)
                 },
                 trailingIcon = Icons.Filled.Favorite,
-                trailingIconClickable = trailingIconClickable
+                trailingIconClickable = trailingIconClickable,
+                leadingIconClickable = leadingIconClickable
             ) {
+                trailingIconClickable.value = false
                 navController.navigate(JetScreens.FavoriteScreen.name)
             }
         },

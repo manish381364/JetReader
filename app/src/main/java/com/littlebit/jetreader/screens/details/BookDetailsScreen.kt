@@ -1,30 +1,47 @@
 package com.littlebit.jetreader.screens.details
 
-import androidx.compose.animation.core.*
-import androidx.compose.foundation.layout.*
+import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBack
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.littlebit.jetreader.components.*
+import com.littlebit.jetreader.components.AboutBook
+import com.littlebit.jetreader.components.BookDetailsImage
+import com.littlebit.jetreader.components.ExpandableCard
+import com.littlebit.jetreader.components.JetReaderAppBar
+import com.littlebit.jetreader.components.floatingActionOnClick
 import com.littlebit.jetreader.screens.home.HomeScreenViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun BookDetailsScreen(
     navController: NavHostController,
     bookId: String?,
-    viewModel: BookDetailsViewModel
+    viewModel: BookDetailsViewModel = hiltViewModel(),
+    isFavorite: Boolean = false
 ) {
     viewModel.getBookById(bookId ?: "")
+    Log.d("BOOK_ID", "BookDetailsScreen: $bookId")
     val context = LocalContext.current
     val leadingIconClickable = remember {
         mutableStateOf(true)
@@ -70,23 +87,25 @@ fun BookDetailsScreen(
                 ExpandableCard(viewModel)
             }
 
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.BottomCenter)
-                    .padding(15.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                val homeViewModel: HomeScreenViewModel = hiltViewModel()
-                FloatingActionButton(onClick = {
-                    floatingActionOnClick(viewModel, navController, context, homeViewModel)
-                }) {
-                    Text("Save")
-                }
-                FloatingActionButton(onClick = {
-                    navController.popBackStack()
-                }) {
-                    Text("Cancel")
+            if (!isFavorite) {
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.BottomCenter)
+                        .padding(15.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    val homeViewModel: HomeScreenViewModel = hiltViewModel()
+                    FloatingActionButton(onClick = {
+                        floatingActionOnClick(viewModel, navController, context, homeViewModel)
+                    }) {
+                        Text("Save")
+                    }
+                    FloatingActionButton(onClick = {
+                        navController.popBackStack()
+                    }) {
+                        Text("Cancel")
+                    }
                 }
             }
         }

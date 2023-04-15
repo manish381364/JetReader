@@ -62,8 +62,8 @@ class BookRepository @Inject constructor(private val api: BooksApi) {
         val response = try {
             Resource.Loading(data = true)
             api.getBookById(bookId)
-
         }catch (exception: Exception){
+            Resource.Loading(data = false)
             return Resource.Error(message = "An error occurred ${exception.message.toString()}")
         }
         Resource.Loading(data = false)

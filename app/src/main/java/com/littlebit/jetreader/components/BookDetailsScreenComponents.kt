@@ -145,7 +145,8 @@ fun floatingActionOnClick(
         isFavorite = false,
         isRead = false,
         userId = FirebaseAuth.getInstance().currentUser?.uid.toString(),
-        rating = 2,
+        rating = 4,
+        bookId = viewModel.bookResource.value.data?.id ?: "",
     )
     saveToDataBase(book, navController, context, homeViewModel)
 }
@@ -248,7 +249,11 @@ fun saveToDataBase(
     if (book.id != "" && !alreadyExistBook.value) {
         dbCollection.add(book).addOnSuccessListener {
             val docId = it.id
-            db.document("books/$docId").update(hashMapOf("id" to docId) as Map<String, Any>)
+            db.document("books/$docId").update(
+                hashMapOf(
+                    "id" to docId
+                ) as Map<String, Any>
+            )
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         Log.d("FIREBASE", "DocumentSnapshot successfully updated!")

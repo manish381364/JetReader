@@ -6,6 +6,9 @@ import com.google.firebase.firestore.PropertyName
 data class JetBook(
     @Exclude
     var id: String? = null,
+    @get:PropertyName("book_id")
+    @set:PropertyName("book_id")
+    var bookId: String? = null,
     var title: String? = null,
     var author: String? = null,
     var description: String? = null,
@@ -34,7 +37,4 @@ data class JetBook(
     @get:PropertyName("finished_reading_at")
     @set:PropertyName("finished_reading_at")
     var finishedReading: String? = null,
-) {
-
-
-}
+)

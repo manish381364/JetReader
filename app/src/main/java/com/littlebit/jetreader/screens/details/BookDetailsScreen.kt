@@ -26,13 +26,20 @@ fun BookDetailsScreen(
 ) {
     viewModel.getBookById(bookId ?: "")
     val context = LocalContext.current
+    val leadingIconClickable = remember {
+        mutableStateOf(true)
+    }
     Scaffold(
         topBar = {
             JetReaderAppBar(
                 title = "Book Details",
                 showProfile = false,
                 leadingIcon = Icons.Rounded.ArrowBack,
-                leadingIconOnClick = { navController.popBackStack() }
+                leadingIconOnClick = {
+                    leadingIconClickable.value = false
+                    navController.popBackStack()
+                },
+                leadingIconClickable = leadingIconClickable
             )
         },
 

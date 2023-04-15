@@ -27,14 +27,18 @@ fun UpdateScreen(
     bookId: String?,
     viewModel: HomeScreenViewModel = hiltViewModel()
 ) {
-
+    val leadingIconClickable = remember { mutableStateOf(true) }
     Scaffold(
         topBar = {
             JetReaderAppBar(
                 title = "Update Book",
                 showProfile = false,
                 leadingIcon = Icons.TwoTone.ArrowBack,
-                leadingIconOnClick = { navController.popBackStack() }
+                leadingIconOnClick = {
+                    leadingIconClickable.value = false
+                    navController.popBackStack()
+                },
+                leadingIconClickable = leadingIconClickable
             )
         }
     ) {

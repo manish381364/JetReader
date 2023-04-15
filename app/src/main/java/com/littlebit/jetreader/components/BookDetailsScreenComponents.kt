@@ -3,9 +3,13 @@ package com.littlebit.jetreader.components
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
-import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandIn
+import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.animation.shrinkOut
+import androidx.compose.animation.with
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -52,45 +56,69 @@ fun ExpandableCard(
     viewModel: BookDetailsViewModel
 ) {
     var expanded by remember { mutableStateOf(false) }
-    ElevatedCard(
-        modifier = Modifier
-            .padding(start = 5.dp, end = 5.dp, bottom = 20.dp)
-            .clickable { expanded = !expanded }
-            .clip(RoundedCornerShape(10.dp))
-            .animateContentSize(animationSpec = tween(2000, easing = EaseInOut)),
-        elevation = CardDefaults.cardElevation(4.dp),
-    ) {
+    AnimatedContent(
+        targetState = expanded,
+        transitionSpec = {
+            if (targetState) {
+                expandIn(
+                    expandFrom = Alignment.TopCenter,
+                    animationSpec = tween(300, easing = EaseInOut)
+                ) with shrinkOut(
+                    shrinkTowards = Alignment.TopCenter,
+                    animationSpec = tween(300, easing = EaseInOut)
+                )
+            } else {
+                expandIn(
+                    expandFrom = Alignment.TopCenter,
+                    animationSpec = tween(300, easing = EaseInOut)
+                ) with shrinkHorizontally(
+                    shrinkTowards = Alignment.End,
+                    animationSpec = tween(300, easing = EaseInOut)
+                )
+            }
+        },
 
-        val html = viewModel.bookResource.value.data?.volumeInfo?.description ?: ""
-        val doc = Jsoup.parse(html)
-        val paragraphs = doc.select("p")
-        val text = StringBuilder("")
-        for (paragraph in paragraphs) {
-            text.append(paragraph.text() + "\n")
-            println(paragraph.text() + "\n")
-        }
-
-        Text(
-            text = text.toString(),
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Normal,
-            maxLines = if (expanded) (Int.MAX_VALUE) else 3,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier
-                .padding(top = 5.dp, bottom = 2.dp, start = 5.dp, end = 5.dp)
-                .fillMaxWidth()
-        )
-        IconButton(modifier = Modifier
-            .align(Alignment.End),
-            onClick = { expanded = !expanded }
         ) {
-            Icon(
-                imageVector = if (!expanded) Icons.Default.ArrowDropDown else Icons.Default.ArrowDropUp,
-                contentDescription = "Expand"
-            )
-        }
+        ElevatedCard(
+            modifier = Modifier
+                .padding(start = 5.dp, end = 5.dp, bottom = 20.dp)
+                .clickable { expanded = !expanded }
+                .clip(RoundedCornerShape(10.dp)),
+            elevation = CardDefaults.cardElevation(4.dp),
+        ) {
 
+            val html = viewModel.bookResource.value.data?.volumeInfo?.description ?: ""
+            val doc = Jsoup.parse(html)
+            val paragraphs = doc.select("p")
+            val text = StringBuilder("")
+            for (paragraph in paragraphs) {
+                text.append(paragraph.text() + "\n")
+                println(paragraph.text() + "\n")
+            }
+
+            Text(
+                text = text.toString(),
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Normal,
+                maxLines = if (expanded) (Int.MAX_VALUE) else 3,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .padding(top = 5.dp, bottom = 2.dp, start = 5.dp, end = 5.dp)
+                    .fillMaxWidth()
+            )
+            IconButton(modifier = Modifier
+                .align(Alignment.End),
+                onClick = { expanded = !expanded }
+            ) {
+                Icon(
+                    imageVector = if (!expanded) Icons.Default.ArrowDropDown else Icons.Default.ArrowDropUp,
+                    contentDescription = "Expand"
+                )
+            }
+
+        }
     }
+
 }
 
 fun floatingActionOnClick(

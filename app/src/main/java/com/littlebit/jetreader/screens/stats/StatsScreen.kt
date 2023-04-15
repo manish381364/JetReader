@@ -6,6 +6,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.navigation.NavHostController
 import com.google.firebase.auth.FirebaseAuth
 import com.littlebit.jetreader.components.JetReaderAppBar
@@ -23,19 +25,26 @@ fun StatsScreen(
 ) {
     var books: List<JetBook>
     val currentUser = FirebaseAuth.getInstance().currentUser
+    val leadingIconClickable = remember {
+        mutableStateOf(true)
+    }
     if (!viewModel.data.value.loading!!)
         Scaffold(
             topBar = {
                 JetReaderAppBar(
                     title = "Books Stats",
                     leadingIcon = Icons.Rounded.ArrowBack,
-                    leadingIconOnClick = { navController.popBackStack() },
-                    showProfile = false
+                    leadingIconOnClick = {
+                        leadingIconClickable.value = false
+                        navController.popBackStack()
+                    },
+                    showProfile = false,
+                    leadingIconClickable = leadingIconClickable
                 )
             }
         ) {
             books = if (!viewModel.data.value.data.isNullOrEmpty()) {
-                viewModel.data.value.data!!.filter { user-> user.userId == currentUser?.uid }
+                viewModel.data.value.data!!.filter { user -> user.userId == currentUser?.uid }
             } else {
                 emptyList()
             }

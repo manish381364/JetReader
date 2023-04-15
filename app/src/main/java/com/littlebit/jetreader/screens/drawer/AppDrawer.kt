@@ -22,7 +22,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Person2
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Brightness2
 import androidx.compose.material.icons.rounded.Logout
@@ -57,8 +56,10 @@ import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.firebase.auth.FirebaseAuth
+import com.littlebit.jetreader.R
 import com.littlebit.jetreader.navigation.JetScreens
 import com.littlebit.jetreader.ui.theme.JetFontFamily
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
@@ -66,6 +67,9 @@ fun AppDrawer(
     navController: NavHostController = rememberAnimatedNavController(),
     isDarkTheme: MutableState<Boolean>,
 ) {
+    val leadingIconClickable = remember {
+        mutableStateOf(true)
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -85,7 +89,12 @@ fun AppDrawer(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(
+                        enabled = leadingIconClickable.value,
+                        onClick = {
+                            leadingIconClickable.value = false
+                            navController.popBackStack()
+                        }) {
                         Icon(
                             imageVector = Icons.Rounded.ArrowBack,
                             contentDescription = "Back"
@@ -113,6 +122,7 @@ fun AppDrawerContent(
     navController: NavHostController = rememberAnimatedNavController(),
     isDarkTheme: MutableState<Boolean>
 ) {
+
     Column(
         modifier = Modifier
             .clip(RoundedCornerShape(topStart = 100.dp, topEnd = 100.dp))
@@ -145,7 +155,7 @@ fun AppDrawerContent(
                     .background(MaterialTheme.colorScheme.onSurfaceVariant)
             ) {
                 AsyncImage(
-                    model = profileImage ?: Icons.Filled.Person2,
+                    model = profileImage ?: R.drawable.person_image,
                     modifier = Modifier
                         .size(100.dp)
                         .clip(CircleShape),
@@ -176,7 +186,10 @@ fun AppDrawerContent(
             colors = CardDefaults.cardColors(Color.Transparent)
         ) {
             Text(
-                text = userName ?: "User Name",
+                text = if (userName != null && email != null) {
+                    if (userName.toString().isNotEmpty()) userName
+                    else email.toString().split("@")[0].uppercase(Locale.ROOT)
+                } else "User Name",
                 style = TextStyle(
                     color = MaterialTheme.colorScheme.onSurface,
                     fontSize = MaterialTheme.typography.titleLarge.fontSize,

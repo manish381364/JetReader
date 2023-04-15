@@ -5,6 +5,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.littlebit.jetreader.components.JetReaderAppBar
@@ -16,13 +18,18 @@ fun SearchScreen(
     navController: NavHostController,
     viewModel: BooksSearchViewModel = hiltViewModel()
 ) {
+    val leadingIconClickable = remember { mutableStateOf(true) }
     Scaffold(
         topBar = {
             JetReaderAppBar(
                 title = "Search",
                 leadingIcon = Icons.Default.ArrowBack,
-                leadingIconOnClick = { navController.popBackStack() },
-                showProfile = false
+                leadingIconOnClick = {
+                    leadingIconClickable.value = false
+                    navController.popBackStack()
+                },
+                showProfile = false,
+                leadingIconClickable = leadingIconClickable,
             )
         },
 

@@ -9,6 +9,8 @@ import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import com.littlebit.jetreader.components.JetReaderAppBar
@@ -19,18 +21,24 @@ import com.littlebit.jetreader.screens.home.HomeScreenViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavoriteScreen(navController: NavHostController, viewModel: HomeScreenViewModel) {
+    val leadingIconClickable = remember {
+        mutableStateOf(true)
+    }
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            JetReaderAppBar(title = "Favorite Books", showProfile = false,
+            JetReaderAppBar(
+                title = "Favorite Books", showProfile = false,
                 leadingIconOnClick = {
-                    navController.navigate(JetScreens.HomeScreen.name){
-                        popUpTo(JetScreens.HomeScreen.name){
+                    leadingIconClickable.value = false
+                    navController.navigate(JetScreens.HomeScreen.name) {
+                        popUpTo(JetScreens.HomeScreen.name) {
                             inclusive = true
                         }
                     }
                 },
                 leadingIcon = Icons.Rounded.ArrowBack,
+                leadingIconClickable = leadingIconClickable
             )
         },
     ) { it ->

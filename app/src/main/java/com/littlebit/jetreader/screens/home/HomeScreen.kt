@@ -6,6 +6,8 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -22,6 +24,9 @@ fun HomeScreen(
     navController: NavController = NavHostController(LocalContext.current),
     viewModel: HomeScreenViewModel = hiltViewModel(),
 ) {
+    val trailingIconClickable = remember {
+        mutableStateOf(true)
+    }
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -29,9 +34,11 @@ fun HomeScreen(
                 title = "JetReader", showProfile = true,
                 leadingIcon = Icons.Rounded.Menu,
                 leadingIconOnClick = {
+                    trailingIconClickable.value = false
                     navController.navigate(JetScreens.DrawerScreen.name)
                 },
                 trailingIcon = Icons.Filled.Favorite,
+                trailingIconClickable = trailingIconClickable
             ) {
                 navController.navigate(JetScreens.FavoriteScreen.name)
             }

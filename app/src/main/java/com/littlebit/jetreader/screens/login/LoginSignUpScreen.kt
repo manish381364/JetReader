@@ -1,12 +1,20 @@
 package com.littlebit.jetreader.screens.login
 
 import android.util.Log
-import androidx.compose.foundation.layout.*
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,7 +26,11 @@ import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.littlebit.jetreader.R
-import com.littlebit.jetreader.components.*
+import com.littlebit.jetreader.components.Fields
+import com.littlebit.jetreader.components.JetReaderLogo
+import com.littlebit.jetreader.components.SignUpOrLogin
+import com.littlebit.jetreader.components.SocialMediaButtons
+import com.littlebit.jetreader.components.TextBetweenDivider
 import com.littlebit.jetreader.navigation.JetScreens
 import com.littlebit.jetreader.utils.isValidEmail
 import com.littlebit.jetreader.utils.isValidPassWord
@@ -62,53 +74,52 @@ fun LoginScreen(
             val loading = remember {
                 mutableStateOf(false)
             }
-
             JetReaderLogo()
-
-            Fields(
-                modifier = Modifier.padding(top = 5.dp, bottom = 15.dp),
-                loading = loading,
-                isCreateAccount = isCreateAccount,
-            ) { email, password ->
-                if(isCreateAccount.value){
-                    if(!loading.value){
-                        loading.value = true
-                        Log.d("Done", "LoginScreen: $email, $password")
-                        if (isValidEmail(email) && isValidPassWord(password)) {
-                            viewModel.signUp(email, password){
-                                if(viewModel.loadingState.value == false && viewModel.signUpSucces.value == true){
-                                    navController.navigate(JetScreens.HomeScreen.name){
-                                        popUpTo(JetScreens.LoginSignUpScreen.name){
-                                            inclusive = true
+            AnimatedContent(targetState = isCreateAccount.value) {
+                Fields(
+                    modifier = Modifier.padding(top = 5.dp, bottom = 15.dp),
+                    loading = loading,
+                    isCreateAccount = isCreateAccount,
+                ) { email, password ->
+                    if (isCreateAccount.value) {
+                        if (!loading.value) {
+                            loading.value = true
+                            Log.d("Done", "LoginScreen: $email, $password")
+                            if (isValidEmail(email) && isValidPassWord(password)) {
+                                viewModel.signUp(email, password) {
+                                    if (viewModel.loadingState.value == false && viewModel.signUpSucces.value == true) {
+                                        navController.navigate(JetScreens.HomeScreen.name) {
+                                            popUpTo(JetScreens.LoginSignUpScreen.name) {
+                                                inclusive = true
+                                            }
                                         }
                                     }
-                                }
 
+                                }
+                                Log.d("Valid", "LoginScreen: $email, $password")
+                            } else {
+                                Log.d("Not Valid", "LoginScreen: $email, $password")
                             }
-                            Log.d("Valid", "LoginScreen: $email, $password")
-                        } else {
-                            Log.d("Not Valid", "LoginScreen: $email, $password")
+                            loading.value = false
                         }
-                        loading.value = false
-                    }
-                }
-                else{
-                    if(!loading.value) {
-                        loading.value = true
-                        viewModel.signIn(email, password){
-                            navController.navigate(JetScreens.HomeScreen.name){
-                                popUpTo(JetScreens.LoginSignUpScreen.name){
-                                    inclusive = true
+                    } else {
+                        if (!loading.value) {
+                            loading.value = true
+                            viewModel.signIn(email, password) {
+                                navController.navigate(JetScreens.HomeScreen.name) {
+                                    popUpTo(JetScreens.LoginSignUpScreen.name) {
+                                        inclusive = true
+                                    }
                                 }
                             }
+                            Log.d("Done", "SignUpScreen: $email, $password")
+                            if (isValidEmail(email) && isValidPassWord(password)) {
+                                Log.d("Valid", "SignUpScreen: $email, $password")
+                            } else {
+                                Log.d("Not Valid", "SignUpScreen: $email, $password")
+                            }
+                            loading.value = false
                         }
-                        Log.d("Done", "SignUpScreen: $email, $password")
-                        if (isValidEmail(email) && isValidPassWord(password)) {
-                            Log.d("Valid", "SignUpScreen: $email, $password")
-                        } else {
-                            Log.d("Not Valid", "SignUpScreen: $email, $password")
-                        }
-                        loading.value = false
                     }
                 }
             }

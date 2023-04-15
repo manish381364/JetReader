@@ -12,7 +12,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
@@ -41,6 +40,7 @@ import coil.request.ImageRequest
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.littlebit.jetreader.R
 import com.littlebit.jetreader.model.JetBook
 import com.littlebit.jetreader.navigation.JetScreens
 import com.littlebit.jetreader.screens.home.*
@@ -77,6 +77,8 @@ fun JetReaderAppBar(
     leadingIcon: ImageVector? = null,
     leadingIconOnClick: () -> Unit = {},
     trailingIcon: ImageVector? = null,
+    leadingIconClickable: MutableState<Boolean> = mutableStateOf(true),
+    trailingIconClickable: MutableState<Boolean> = mutableStateOf(true),
     trailingIconOnClick: () -> Unit = {},
 ) {
     TopAppBar(
@@ -90,7 +92,10 @@ fun JetReaderAppBar(
         },
         navigationIcon = {
             if (leadingIcon != null)
-                IconButton(onClick = { leadingIconOnClick() }) {
+                IconButton(
+                    enabled = leadingIconClickable.value,
+                    onClick = { leadingIconOnClick() }
+                ) {
                     Icon(
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp)),
@@ -101,9 +106,10 @@ fun JetReaderAppBar(
         },
         actions = {
             if (trailingIcon != null) {
-                IconButton(onClick = {
-                    trailingIconOnClick()
-                }) {
+                IconButton(
+                    onClick = { trailingIconOnClick() },
+                    enabled = trailingIconClickable.value
+                ) {
                     Icon(
                         imageVector = trailingIcon,
                         contentDescription = "trailing icon",
@@ -238,7 +244,7 @@ fun ProfileIcon(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         AsyncImage(
-            model = profileImage?: Icons.Filled.AccountCircle,
+            model = profileImage ?: R.drawable.person_image,
             contentDescription = "Profile",
             modifier = Modifier
                 .clickable { navController.navigate(JetScreens.StatsScreen.name) }

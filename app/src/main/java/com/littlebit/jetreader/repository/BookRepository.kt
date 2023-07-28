@@ -6,42 +6,6 @@ import com.littlebit.jetreader.model.Item
 import com.littlebit.jetreader.network.BooksApi
 import javax.inject.Inject
 
-//class BookRepository @Inject constructor(private val api: BooksApi) {
-//
-//    private val dataOrException = DataOrException<List<Item>, Boolean, Exception>()
-//    private val bookInfoDataOrException = DataOrException<Item, Boolean, Exception>()
-//    suspend fun getBooks(query: String): DataOrException<List<Item>, Boolean, Exception>{
-//         try{
-//            dataOrException.loading = true
-//            dataOrException.data = api.getAllBooks(query).items
-//            if(dataOrException.data!!.isNotEmpty()){
-//                Log.d("GETBOOKS", "getBooks:  ${dataOrException.data.toString()}")
-//                dataOrException.loading = false
-//            }else{
-//                dataOrException.exception = Exception("No books found")
-//            }
-//        } catch (e: Exception){
-//            dataOrException.exception = e
-//        }
-//        return dataOrException
-//    }
-//
-//    suspend fun getBook(bookId: String): DataOrException<Item, Boolean, Exception>{
-//        val response = try{
-//            bookInfoDataOrException.loading = true
-//            bookInfoDataOrException.data = api.getBookById(bookId)
-//            if(bookInfoDataOrException.data.toString().isNotEmpty()){
-//                bookInfoDataOrException.loading = false
-//            }
-//            bookInfoDataOrException.loading = false
-//            bookInfoDataOrException
-//        } catch (e: Exception){
-//            bookInfoDataOrException.exception = e
-//            bookInfoDataOrException
-//        }
-//        return response
-//    }
-//}
 class BookRepository @Inject constructor(private val api: BooksApi) {
     suspend fun getBooks(searchQuery: String): Resource<List<Item>> {
         return try {
